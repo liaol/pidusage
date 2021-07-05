@@ -21,6 +21,8 @@ const (
 // SysInfo will record cpu and memory data
 type SysInfo struct {
 	CPU    float64
+	UCPU   float64
+	SCPU   float64
 	Memory float64
 }
 
@@ -160,6 +162,12 @@ func statFromProc(pid int) (*SysInfo, error) {
 	total := stat.stime - _stime + stat.utime - _utime
 	total = total / clkTck
 
+	stotal := stat.stime - _stime
+	stotal = stotal / clkTck
+
+	utotal := stat.utime - _utime
+	utotal = utotal / clkTck
+
 	seconds := stat.start - uptime
 	if _history.uptime != 0 {
 		seconds = uptime - _history.uptime
@@ -172,6 +180,8 @@ func statFromProc(pid int) (*SysInfo, error) {
 
 	history[pid] = *stat
 	sysInfo.CPU = (total / seconds) * 100
+	sysInfo.UCPU = (utotal / seconds) * 100
+	sysInfo.SCPU = (stotal / seconds) * 100
 	sysInfo.Memory = stat.rss * pageSize
 	return sysInfo, nil
 }
