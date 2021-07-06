@@ -190,7 +190,7 @@ func statFromProc(pid int) (*SysInfo, error) {
 	sysInfo.SCPU = (stotal / seconds) * 100
 	sysInfo.Memory = stat.rss * pageSize
 
-	log.Printf("cpu %.2f real cpu %.2f t %v", sysInfo.CPU, (total/secondsReal)*100, t)
+	log.Printf("cpu %.2f real cpu %.2f t %v total %v seconds %v", sysInfo.CPU, (total/secondsReal)*100, t, total, seconds)
 
 	return sysInfo, nil
 }
