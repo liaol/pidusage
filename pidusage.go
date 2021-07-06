@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math"
 	"os/exec"
 	"path"
@@ -11,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 const (
@@ -119,12 +121,14 @@ func statFromPS(pid int) (*SysInfo, error) {
 func statFromProc(pid int) (*SysInfo, error) {
 	sysInfo := &SysInfo{}
 	uptimeFileBytes, err := ioutil.ReadFile(path.Join("/proc", "uptime"))
+	t1 := time.Now()
 	if err != nil {
 		return nil, err
 	}
 	uptime := parseFloat(strings.Split(string(uptimeFileBytes), " ")[0])
 
 	procStatFileBytes, err := ioutil.ReadFile(path.Join("/proc", strconv.Itoa(pid), "stat"))
+	t := time.Since(t1)
 	if err != nil {
 		return nil, err
 	}
@@ -178,11 +182,16 @@ func statFromProc(pid int) (*SysInfo, error) {
 		seconds = 1
 	}
 
+	secondsReal := seconds + t.Seconds()
+
 	history[pid] = *stat
 	sysInfo.CPU = (total / seconds) * 100
 	sysInfo.UCPU = (utotal / seconds) * 100
 	sysInfo.SCPU = (stotal / seconds) * 100
 	sysInfo.Memory = stat.rss * pageSize
+
+	log.Printf("cpu %.2f real cpu %.2f t %v", sysInfo.CPU, (total/secondsReal)*100, t)
+
 	return sysInfo, nil
 }
 
